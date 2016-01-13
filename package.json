@@ -1,0 +1,25 @@
+{
+  "name": "hubot-gitlab-ci",
+  "description": "GitLab CI Web Hook for Hubot",
+  "version": "0.0.1",
+  "author": "Houssam Haidar <houssam@sdelements.com>",
+  "license": "MIT",
+
+  "keywords": ["hubot","hubot-scripts","gitlab","gitlab-ci"],
+
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/sdelements/hubot-gitlab-ci.git"
+  },
+
+  "bugs": {
+    "url": "https://github.com/sdelements/hubot-gitlab-ci/issues"
+  },
+
+  "dependencies": {
+    "coffee-script": "~1.6"
+  },
+
+  "main": "index.coffee"
+
+}
