@@ -30,10 +30,15 @@ module.exports = (robot) ->
         envelope.type = query.type if query.type
 
         message = "#{hook.ref}: Build #{hook.build_id} (#{hook.build_name})"
-        message += " by #{hook.user.name} is [#{hook.build_status.toUpperCase()}]"
-        message += if hook.build_duration then " and took #{Math.round(hook.build_duration / 1000)}s" else ""
+        message += " by #{hook.user.name || hook.commit.author_name}"
+        message += if hook.build_status == "pending" then " is" else " has"
+        message += " [#{hook.build_status.toUpperCase()}]"
+        message += if parseInt(hook.build_duration) > 0 then " and took #{hook.build_duration}s" else ""
+
+        link = hook.repository.homepage + '/builds/' + hook.build_id
 
         robot.send envelope, message
+        robot.send envelope, link
 
         debug && console.log(envelope, query, hook)
 
