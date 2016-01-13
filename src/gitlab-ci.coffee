@@ -37,7 +37,7 @@ module.exports = (robot) ->
         message += " by #{hook.user.name || hook.commit.author_name}"
         message += if /ing$/i.test(hook.build_status) then " is" else " has"
         message += " [#{hook.build_status.toUpperCase()}]"
-        message += if parseInt(hook.build_duration) > 0 then " and took #{hook.build_duration}s" else ""
+        message += if parseInt(hook.build_duration) > 0 then " and took #{Math.round(hook.build_duration * 100) / 100}s" else ""
 
         link = hook.repository.homepage + '/builds/' + hook.build_id
 
