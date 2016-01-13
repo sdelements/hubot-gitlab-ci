@@ -4,6 +4,9 @@
 # Usage:
 #   http://<ip>:<port>/gitlab-ci?targets=room1,room2
 #
+# Usage w/ filtered status:
+#   http://<ip>:<port>/gitlab-ci?targets=room1&status=failed
+#
 # Author:
 #   Houssam Haidar[houssam@sdelements.com]
 
@@ -20,8 +23,9 @@ module.exports = (robot) ->
 
         query = querystring.parse(url.parse(req.url).query)
         hook = req.body
+        status = query.status?
 
-        if !hook || hook.object_kind != "build"
+        if !hook || hook.object_kind != "build" || (query.status && query.status != hook.build_status)
             res.end ""
             return
 
