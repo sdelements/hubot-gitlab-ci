@@ -1,7 +1,7 @@
 {
   "name": "hubot-gitlab-ci",
   "description": "GitLab CI Web Hook for Hubot",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": "Houssam Haidar <houssam@sdelements.com>",
   "license": "MIT",
 

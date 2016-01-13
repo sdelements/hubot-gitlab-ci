@@ -31,7 +31,7 @@ module.exports = (robot) ->
 
         message = "#{hook.ref}: Build #{hook.build_id} (#{hook.build_name})"
         message += " by #{hook.user.name || hook.commit.author_name}"
-        message += if hook.build_status == "pending" then " is" else " has"
+        message += if /ing$/i.test(hook.build_status) then " is" else " has"
         message += " [#{hook.build_status.toUpperCase()}]"
         message += if parseInt(hook.build_duration) > 0 then " and took #{hook.build_duration}s" else ""
 
