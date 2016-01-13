@@ -14,7 +14,7 @@ module.exports = (robot) ->
 
     debug = process.env.GITLABCI_DEBUG?
 
-    robot.router.post "/gitlabci", (req, res) ->
+    robot.router.post "/gitlab-ci", (req, res) ->
 
         gitlabCiChannel = process.env.GITLABCI_CHANNEL or "#gitlab"
 
