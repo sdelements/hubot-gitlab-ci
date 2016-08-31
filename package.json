@@ -17,6 +17,7 @@
   },
 
   "dependencies": {
+    "async": "^1.5.2",
     "coffee-script": "~1.6"
   },
 
