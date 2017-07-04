@@ -11,11 +11,16 @@
 #   Houssam Haidar[houssam@sdelements.com]
 #
 # Commands:
+#   hubot Trigger <x.x> build off <branch> - Trigger a build but do not update Richmond. The format is like "trigger 4.7 build off release/4.7", this affects the new tag that gets created.
+#   hubot Trigger richmond <x.x> build off <branch> - Trigger a build and update richmond with it
+#   hubot Trigger quick richmond <x.x> build off <branch> - Trigger a build and update richmond with it, but skip tests
 #   hubot release_notes {release_number} - Display a list of JIRA ticket numbers
 #
 #   Requires a few environment variables setup
 #
 #     GITLABCI_SERVER - gitlab ci hostname
+#     TEST_SERVER - test server hostname
+#     GITLABCI_PROJECT_NAME - project name of the main project (i.e. 'myorg/myproject')
 #     GITLABCI_PROJECT_ID - project id of the main project
 #     GITLABCI_TOKEN - access token to gitlab ci
 #     JIRA_PROJECT_KEY - project key for jira project
@@ -132,6 +137,47 @@ module.exports = (robot) ->
             return
 
         return "#{major}.#{minor}.#{dev}"
+    triggerBuildPost = (res, updateTestServer, quickly, branch, buildTagPrefix) ->
+        triggerURL = "https://#{process.env.GITLABCI_SERVER}/api/v4/projects/#{process.env.GITLABCI_PROJECT_ID}/trigger/pipeline/"
+        token = gitlabci_token
+        ref = branch
+        buildDestination = 'test'
+        testServer = process.env.TEST_SERVER
+        buildTagPrefix = buildTagPrefix + '.'
+        fields = {
+            'token': token,
+            'ref': ref,
+            'variables[BUILD_DESTINATION]': buildDestination,
+            'variables[BUILD_TAG_PREFIX]': buildTagPrefix,
+        }
+        if updateTestServer
+            fields['variables[TEST_SERVER]'] = testServer
+            fields['variables[SKIP_CHECK_FOR_CHANGES]'] = 'true'
+            if quickly
+                fields['variables[SKIP_TESTS]'] = 'true'
+
+        data = querystring.stringify(fields)
+        console.log data
+        robot.http("#{triggerURL}?private_token=#{gitlabci_token}", { rejectUnauthorized: false }).header('Content-Length', data.length).header('Content-Type', 'application/x-www-form-urlencoded').post(data) (err, resp, body) ->
+            jbody = JSON.parse(body)
+            if err
+                res.send "Could not trigger build :("
+                res.send "Error: #{err}"
+            else
+                res.send "Build triggered off #{ref}! Find it at: https://#{process.env.GITLABCI_SERVER}/#{process.env.GITLABCI_PROJECT_NAME}/pipelines/#{jbody.id}"
+
+    triggerBuildRespond = (res) ->
+        triggerBuildPost res, false, false, res.match[2], res.match[1]
+
+    triggerRichmondBuildRespond = (res) ->
+        triggerBuildPost res, true, false, res.match[2], res.match[1]
+
+    triggerQuickRichmondBuildRespond = (res) ->
+        triggerBuildPost res, true, true, res.match[2], res.match[1]
+
+    robot.respond /trigger (\d+\.\d+) build off (.*)/i, triggerBuildRespond
+    robot.respond /trigger richmond (\d+\.\d+) build off (.*)/i, triggerRichmondBuildRespond
+    robot.respond /trigger quick richmond (\d+\.\d+) build off (.*)/i, triggerQuickRichmondBuildRespond
 
     robot.respond /release_notes ((\d+(\.\d+)*)(qa)?)(\s+(\d+(\.\d+)*)(qa)?)?$/i, (res) ->
          version = res.match[1]
