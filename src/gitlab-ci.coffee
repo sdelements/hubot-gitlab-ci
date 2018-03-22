@@ -11,10 +11,10 @@
 #   Houssam Haidar[houssam@sdelements.com]
 #
 # Commands:
-#   hubot Trigger <x.x> <y> build off <branch> to <env> [with content (latest|<content_tag>)] - Trigger a build but do not update Tokyo. The format is like "trigger 4.7. qa build off release/4.7 to test". The first string is a prefix for the previous tag, the second string is a suffix, so "4.7. qa" would generate the next tag from the last tag that starts with "4.7." and ends with "qa". The env is one of "dev" or "test". Optionally, content is "latest" or a content tag
-#   hubot Trigger quick <x.x> <y> build off <branch> to <env> [with content (latest|<content_tag>)] - Trigger a build, but skip tests
-#   hubot Trigger tokyo <x.x> <y> build off <branch> to <env> [with content (latest|<content_tag>)] - Trigger a build and update tokyo with it
-#   hubot Trigger quick tokyo <x.x> <y> build off <branch> to <env> [with content (latest|<content_tag>)] - Trigger a build and update tokyo with it, but skip tests
+#   hubot Trigger <x.x> [<suffix>] build off <branch> to <env> [with content (latest|<content_tag>)] - Trigger a build but do not update Tokyo. The format is like "trigger 4.7. ssr build off release/4.7 to test". The first string is a prefix for the previous tag, the second string is an optional suffix, so "4.7. ssr" would generate the next tag from the last tag that starts with "4.7." and ends with "ssr", and "4.7." alone would look for a tag just starting with "4.7." and ending in anything. The env is one of "dev" or "test". Optionally, content is "latest" or a content tag.
+#   hubot Trigger quick <x.x> [<suffix>] build off <branch> to <env> [with content (latest|<content_tag>)] - Trigger a build, but skip tests
+#   hubot Trigger tokyo <x.x> [<suffix>] build off <branch> to <env> [with content (latest|<content_tag>)] - Trigger a build and update tokyo with it
+#   hubot Trigger quick tokyo <x.x> [<suffix>] build off <branch> to <env> [with content (latest|<content_tag>)] - Trigger a build and update tokyo with it, but skip tests
 #   hubot release_notes {release_number} - Display a list of JIRA ticket numbers
 #
 #   Requires a few environment variables setup
@@ -176,6 +176,7 @@ module.exports = (robot) ->
             else
                 res.send "Build triggered off #{ref}! Find it at: https://#{process.env.GITLABCI_SERVER}/#{process.env.GITLABCI_PROJECT_NAME}/pipelines/#{jbody.id}"
 
+    # Patterns for calling the generic trigger function in different ways
     triggerBuildRespondGeneric = (res, updateTestServer, quickly) ->
         triggerBuildPost res, updateTestServer, quickly, res.match[3], res.match[1], res.match[2], res.match[4], res.match[5]
 
@@ -191,15 +192,16 @@ module.exports = (robot) ->
     triggerQuickTestServerBuildRespond = (res) ->
         triggerBuildRespondGeneric res, true, true
 
-    robot.respond /trigger ([\w.]+) ([\w.]+) build off (.*) to (dev|test)$/i, triggerBuildRespond
-    robot.respond /trigger quick ([\w.]+) ([\w.]+) build off (.*) to (dev|test)$/i, triggerQuickBuildRespond
-    robot.respond /trigger tokyo ([\w.]+) ([\w.]+) build off (.*) to (dev|test)$/i, triggerTestServerBuildRespond
-    robot.respond /trigger quick tokyo ([\w.]+) ([\w.]+) build off (.*) to (dev|test)$/i, triggerQuickTestServerBuildRespond
+    robot.respond /trigger ([\w.]+) ([\w.]*) *build off (.*) to (dev|test)$/i, triggerBuildRespond
+    robot.respond /trigger quick ([\w.]+) ([\w.]*) *build off (.*) to (dev|test)$/i, triggerQuickBuildRespond
+    robot.respond /trigger tokyo ([\w.]+) ([\w.]*) *build off (.*) to (dev|test)$/i, triggerTestServerBuildRespond
+    robot.respond /trigger quick tokyo ([\w.]+) ([\w.]*) *build off (.*) to (dev|test)$/i, triggerQuickTestServerBuildRespond
 
-    robot.respond /trigger ([\w.]+) ([\w.]+) build off (.*) to (dev|test) with content (latest|[\w.]+)/i, triggerBuildRespond
-    robot.respond /trigger quick ([\w.]+) ([\w.]+) build off (.*) to (dev|test) with content (latest|[\w.]+)/i, triggerQuickBuildRespond
-    robot.respond /trigger tokyo ([\w.]+) ([\w.]+) build off (.*) to (dev|test) with content (latest|[\w.]+)/i, triggerTestServerBuildRespond
-    robot.respond /trigger quick tokyo ([\w.]+) ([\w.]+) build off (.*) to (dev|test) with content (latest|[\w.]+)/i, triggerQuickTestServerBuildRespond
+    robot.respond /trigger ([\w.]+) ([\w.]*) *build off (.*) to (dev|test) with content (latest|[\w.]+)/i, triggerBuildRespond
+    robot.respond /trigger quick ([\w.]+) ([\w.]*) *build off (.*) to (dev|test) with content (latest|[\w.]+)/i, triggerQuickBuildRespond
+    robot.respond /trigger tokyo ([\w.]+) ([\w.]*) *build off (.*) to (dev|test) with content (latest|[\w.]+)/i, triggerTestServerBuildRespond
+    robot.respond /trigger quick tokyo ([\w.]+) ([\w.]*) *build off (.*) to (dev|test) with content (latest|[\w.]+)/i, triggerQuickTestServerBuildRespond
+
 
     robot.respond /release_notes ((\d+(\.\d+)*)(qa)?)(\s+(\d+(\.\d+)*)(qa)?)?$/i, (res) ->
          version = res.match[1]
